@@ -1,8 +1,9 @@
 // src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Home from './pages/Home';
+import { useTaskStore } from './store/taskStore';
+import TaskView from './pages/TaskView';
+import TaskManagement from './pages/TaskManagement';
 import About from './pages/About';
-import { useTaskStore } from './store/taskStore.ts';
 
 function App() {
   const { themes, activeTheme } = useTaskStore();
@@ -12,18 +13,40 @@ function App() {
     <Router>
       <div style={{
         backgroundColor: currentTheme?.colors.background,
-        color: currentTheme?.colors.text
+        color: currentTheme?.colors.text,
+        minHeight: '100vh'
       }}>
-        <nav className="p-4 bg-gray-200">
-          <Link to="/" className="mr-4">Home</Link>
-          <Link to="/about">About</Link>
+        <nav className="bg-white dark:bg-slate-800 shadow-sm">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <div className="flex space-x-6">
+              <Link
+                to="/"
+                className="text-gray-700 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+              >
+                Task Overview
+              </Link>
+              <Link
+                to="/manage"
+                className="text-gray-700 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+              >
+                Manage Tasks
+              </Link>
+              <Link
+                to="/about"
+                className="text-gray-700 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+              >
+                About
+              </Link>
+            </div>
+          </div>
         </nav>
-        <div className="p-4">
+        <main className="p-4 sm:p-6 md:p-8">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<TaskView />} />
+            <Route path="/manage" element={<TaskManagement />} />
             <Route path="/about" element={<About />} />
           </Routes>
-        </div>
+        </main>
       </div>
     </Router>
   );
