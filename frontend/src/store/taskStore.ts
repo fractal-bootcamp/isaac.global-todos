@@ -61,7 +61,7 @@ const defaultThemes: Theme[] = [
     isDark: false,
     colors: {
       background: "#ffffff",
-      text: "#1a1a1a",
+      text: "#334155",
       primary: "#3b82f6",
       secondary: "#64748b",
       accent: "#22c55e",
@@ -72,11 +72,11 @@ const defaultThemes: Theme[] = [
     name: "Dark Theme",
     isDark: true,
     colors: {
-      background: "#1a1a1a",
-      text: "#ffffff",
-      primary: "#60a5fa",
-      secondary: "#94a3b8",
-      accent: "#4ade80",
+      background: "#1e293b", // Softer dark blue
+      text: "#e2e8f0", // Soft white
+      primary: "#60a5fa", // Bright blue
+      secondary: "#94a3b8", // Soft gray
+      accent: "#4ade80", // Soft green
     },
   },
 ];
