@@ -1,12 +1,12 @@
 // src/pages/TaskView.tsx
 import { PageLayout } from '../components/layout/PageLayout';
-import { StatusTabs } from '../components/StatusTabs';
+import { TaskStatusView } from '../components/TaskStatusView';
 
 function TaskView() {
   return (
     <PageLayout title="Task Overview">
       <div className="mt-8">
-        <StatusTabs />
+        <TaskStatusView />
       </div>
     </PageLayout>
   );
