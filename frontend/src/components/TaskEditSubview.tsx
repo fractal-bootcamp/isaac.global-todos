@@ -1,6 +1,7 @@
 // src/components/TaskEditSubview.tsx
 import React from 'react';
 import { useTaskStore } from '../store/taskStore';
+import { TASK_STATUSES } from '../types/task';
 
 interface TaskEditSubviewProps {
     taskId: string;
@@ -8,7 +9,14 @@ interface TaskEditSubviewProps {
 }
 
 export const TaskEditSubview = ({ taskId, onClose }: TaskEditSubviewProps) => {
-    const { tasks, updateTask } = useTaskStore();
+    const {
+        tasks,
+        epics,
+        updateTask,
+        assignTaskToEpic,
+        removeTaskFromEpic
+    } = useTaskStore();
+
     const task = tasks.find(t => t.id === taskId);
 
     if (!task) return null;
@@ -16,10 +24,22 @@ export const TaskEditSubview = ({ taskId, onClose }: TaskEditSubviewProps) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
+
+        // Update task details
         updateTask(taskId, {
             title: formData.get('title') as string,
             description: formData.get('description') as string,
+            status: formData.get('status') as any, // TaskStatus type will be enforced by select options
         });
+
+        // Handle epic assignment
+        const newEpicId = formData.get('epicId') as string;
+        if (newEpicId) {
+            assignTaskToEpic(taskId, newEpicId);
+        } else {
+            removeTaskFromEpic(taskId);
+        }
+
         onClose();
     };
 
@@ -68,6 +88,43 @@ export const TaskEditSubview = ({ taskId, onClose }: TaskEditSubviewProps) => {
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             required
                         />
+                    </div>
+
+                    <div>
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                            Status
+                        </label>
+                        <select
+                            id="status"
+                            name="status"
+                            defaultValue={task.status}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        >
+                            {TASK_STATUSES.map(({ value, label }) => (
+                                <option key={value} value={value}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="epicId" className="block text-sm font-medium text-gray-700">
+                            Epic
+                        </label>
+                        <select
+                            id="epicId"
+                            name="epicId"
+                            defaultValue={task.epicId || ''}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        >
+                            <option value="">No Epic</option>
+                            {epics.map(epic => (
+                                <option key={epic.id} value={epic.id}>
+                                    {epic.title}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div className="flex justify-end space-x-3 mt-6">
