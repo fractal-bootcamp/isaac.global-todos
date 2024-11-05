@@ -7,10 +7,48 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+enum EpicStatus {
+  ACTIVE
+  COMPLETED
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  status      TaskStatus @default(PENDING)
+  themeId     String
+  epicId      String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  epic  Epic? @relation(fields: [epicId], references: [id])
+  theme Theme @relation(fields: [themeId], references: [id])
+}
+
+model Epic {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  status      EpicStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tasks Task[]
+}
+
+model Theme {
+  id     String  @id
+  name   String
+  isDark Boolean
+  colors Json // Store the colors object as JSON
+
+  tasks Task[]
 }
