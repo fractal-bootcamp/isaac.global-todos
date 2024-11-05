@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 
 // Type Definitions
 type TaskStatus = "pending" | "in-progress" | "completed" | "archived";
+type EpicStatus = "active" | "completed";
 
 interface Theme {
   id: string;
@@ -17,12 +18,22 @@ interface Theme {
   };
 }
 
+interface Epic {
+  id: string;
+  title: string;
+  description: string;
+  status: EpicStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
 interface Task {
   id: string;
   title: string;
   description: string;
   status: TaskStatus;
   themeId: string;
+  epicId?: string; // Optional reference to an epic
   createdAt: number;
   updatedAt: number;
 }
@@ -30,6 +41,7 @@ interface Task {
 // Store State Interface
 interface TaskState {
   tasks: Task[];
+  epics: Epic[];
   themes: Theme[];
   activeTheme: string;
 
@@ -42,6 +54,19 @@ interface TaskState {
   deleteTask: (id: string) => void;
   moveTask: (id: string, status: TaskStatus) => void;
 
+  // Epic Operations
+  createEpic: (title: string, description: string) => void;
+  updateEpic: (
+    id: string,
+    updates: Partial<Omit<Epic, "id" | "createdAt" | "updatedAt">>
+  ) => void;
+  deleteEpic: (id: string) => void;
+  completeEpic: (id: string) => void;
+
+  // Task-Epic Relations
+  assignTaskToEpic: (taskId: string, epicId: string) => void;
+  removeTaskFromEpic: (taskId: string) => void;
+
   // Theme Operations
   createTheme: (theme: Omit<Theme, "id">) => void;
   updateTheme: (id: string, updates: Partial<Omit<Theme, "id">>) => void;
@@ -50,10 +75,12 @@ interface TaskState {
 
   // Utility Operations
   getTasksByStatus: (status: TaskStatus) => Task[];
+  getTasksByEpicId: (epicId: string) => Task[];
+  getEpicById: (id: string) => Epic | undefined;
   getThemeById: (id: string) => Theme | undefined;
 }
 
-// Default Themes
+// Default Themes (unchanged)
 const defaultThemes: Theme[] = [
   {
     id: "light",
@@ -72,11 +99,11 @@ const defaultThemes: Theme[] = [
     name: "Dark Theme",
     isDark: true,
     colors: {
-      background: "#1e293b", // Softer dark blue
-      text: "#e2e8f0", // Soft white
-      primary: "#60a5fa", // Bright blue
-      secondary: "#94a3b8", // Soft gray
-      accent: "#4ade80", // Soft green
+      background: "#1e293b",
+      text: "#e2e8f0",
+      primary: "#60a5fa",
+      secondary: "#94a3b8",
+      accent: "#4ade80",
     },
   },
 ];
@@ -86,6 +113,7 @@ export const useTaskStore = create<TaskState>()(
   persist(
     (set, get) => ({
       tasks: [],
+      epics: [],
       themes: defaultThemes,
       activeTheme: "light",
 
@@ -127,7 +155,69 @@ export const useTaskStore = create<TaskState>()(
           ),
         })),
 
-      // Theme Operations
+      // Epic Operations
+      createEpic: (title, description) =>
+        set((state) => ({
+          epics: [
+            ...state.epics,
+            {
+              id: crypto.randomUUID(),
+              title,
+              description,
+              status: "active" as EpicStatus,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            },
+          ],
+        })),
+
+      updateEpic: (id, updates) =>
+        set((state) => ({
+          epics: state.epics.map((epic) =>
+            epic.id === id
+              ? { ...epic, ...updates, updatedAt: Date.now() }
+              : epic
+          ),
+        })),
+
+      deleteEpic: (id) =>
+        set((state) => ({
+          epics: state.epics.filter((epic) => epic.id !== id),
+          // Also remove epic reference from tasks
+          tasks: state.tasks.map((task) =>
+            task.epicId === id ? { ...task, epicId: undefined } : task
+          ),
+        })),
+
+      completeEpic: (id) =>
+        set((state) => ({
+          epics: state.epics.map((epic) =>
+            epic.id === id
+              ? { ...epic, status: "completed", updatedAt: Date.now() }
+              : epic
+          ),
+        })),
+
+      // Task-Epic Relations
+      assignTaskToEpic: (taskId, epicId) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, epicId, updatedAt: Date.now() }
+              : task
+          ),
+        })),
+
+      removeTaskFromEpic: (taskId) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, epicId: undefined, updatedAt: Date.now() }
+              : task
+          ),
+        })),
+
+      // Theme Operations (unchanged)
       createTheme: (theme) =>
         set((state) => ({
           themes: [...state.themes, { ...theme, id: crypto.randomUUID() }],
@@ -151,11 +241,16 @@ export const useTaskStore = create<TaskState>()(
       // Utility Operations
       getTasksByStatus: (status) =>
         get().tasks.filter((task) => task.status === status),
+
+      getTasksByEpicId: (epicId) =>
+        get().tasks.filter((task) => task.epicId === epicId),
+
+      getEpicById: (id) => get().epics.find((epic) => epic.id === id),
+
       getThemeById: (id) => get().themes.find((theme) => theme.id === id),
     }),
     {
       name: "task-storage",
-      // Optional: Add version number for future migrations
       version: 1,
     }
   )

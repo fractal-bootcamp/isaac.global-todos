@@ -17,3 +17,31 @@ export const getStatusBadgeColor = (status: TaskStatus): string => {
   };
   return colors[status] || colors.pending;
 };
+
+/* New edition, the epics */
+
+export type EpicStatus = "active" | "completed";
+
+export interface Epic {
+  id: string;
+  title: string;
+  description: string;
+  status: EpicStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// Add Epic status constants (like TASK_STATUSES)
+export const EPIC_STATUSES: { value: EpicStatus; label: string }[] = [
+  { value: "active", label: "Active" },
+  { value: "completed", label: "Completed" },
+];
+
+// Add utility function for epic status colors
+export const getEpicStatusBadgeColor = (status: EpicStatus): string => {
+  const colors = {
+    active: "bg-blue-100 text-blue-800",
+    completed: "bg-green-100 text-green-800",
+  };
+  return colors[status] || colors.active;
+};

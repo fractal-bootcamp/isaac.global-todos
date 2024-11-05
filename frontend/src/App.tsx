@@ -1,39 +1,40 @@
 // src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { useTaskStore } from './store/taskStore';
 import TaskView from './pages/TaskView';
 import TaskManagement from './pages/TaskManagement';
 import About from './pages/About';
+import { EpicList } from './components/epic/EpicList';
+import { EpicDetail } from './components/epic/EpicDetail';
+import { EpicCreateForm } from './components/epic/EpicCreateForm';
 
 function App() {
-  const { themes, activeTheme } = useTaskStore();
-  const currentTheme = themes.find(theme => theme.id === activeTheme);
-
   return (
     <Router>
-      <div style={{
-        backgroundColor: currentTheme?.colors.background,
-        color: currentTheme?.colors.text,
-        minHeight: '100vh'
-      }}>
-        <nav className="bg-white dark:bg-slate-800 shadow-sm">
+      <div>
+        <nav className="bg-white shadow-sm">
           <div className="max-w-4xl mx-auto px-4 py-4">
             <div className="flex space-x-6">
               <Link
                 to="/"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                className="text-gray-700 hover:text-blue-500"
               >
                 Task Overview
               </Link>
               <Link
                 to="/manage"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                className="text-gray-700 hover:text-blue-500"
               >
                 Manage Tasks
               </Link>
               <Link
+                to="/epics"
+                className="text-gray-700 hover:text-blue-500"
+              >
+                Epics
+              </Link>
+              <Link
                 to="/about"
-                className="text-gray-700 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                className="text-gray-700 hover:text-blue-500"
               >
                 About
               </Link>
@@ -45,6 +46,9 @@ function App() {
             <Route path="/" element={<TaskView />} />
             <Route path="/manage" element={<TaskManagement />} />
             <Route path="/about" element={<About />} />
+            <Route path="/epics" element={<EpicList />} />
+            <Route path="/epics/new" element={<EpicCreateForm />} />
+            <Route path="/epics/:id" element={<EpicDetail />} />
           </Routes>
         </main>
       </div>
