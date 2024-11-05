@@ -1,14 +1,14 @@
 // src/pages/TaskView.tsx
-import { PageLayout } from '../components/layout/PageLayout';
 import { TaskStatusView } from '../components/TaskStatusView';
 
 function TaskView() {
   return (
-    <PageLayout title="Task Overview">
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Task Overview</h1>
       <div className="mt-8">
         <TaskStatusView />
       </div>
-    </PageLayout>
+    </div>
   );
 }
 

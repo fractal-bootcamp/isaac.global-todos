@@ -8,7 +8,7 @@ interface TaskEditSubviewProps {
 }
 
 export const TaskEditSubview = ({ taskId, onClose }: TaskEditSubviewProps) => {
-    const { tasks, themes, updateTask } = useTaskStore();
+    const { tasks, updateTask } = useTaskStore();
     const task = tasks.find(t => t.id === taskId);
 
     if (!task) return null;
@@ -19,21 +19,20 @@ export const TaskEditSubview = ({ taskId, onClose }: TaskEditSubviewProps) => {
         updateTask(taskId, {
             title: formData.get('title') as string,
             description: formData.get('description') as string,
-            themeId: formData.get('themeId') as string,
         });
         onClose();
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-opacity-70 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-slate-800">
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    <h3 className="text-lg font-medium">
                         Edit Task
                     </h3>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+                        className="text-gray-400 hover:text-gray-500"
                     >
                         <span className="sr-only">Close</span>
                         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -44,7 +43,7 @@ export const TaskEditSubview = ({ taskId, onClose }: TaskEditSubviewProps) => {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
                             Title
                         </label>
                         <input
@@ -52,13 +51,13 @@ export const TaskEditSubview = ({ taskId, onClose }: TaskEditSubviewProps) => {
                             id="title"
                             name="title"
                             defaultValue={task.title}
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             required
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
                             Description
                         </label>
                         <textarea
@@ -66,34 +65,16 @@ export const TaskEditSubview = ({ taskId, onClose }: TaskEditSubviewProps) => {
                             name="description"
                             defaultValue={task.description}
                             rows={3}
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             required
                         />
-                    </div>
-
-                    <div>
-                        <label htmlFor="themeId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Theme
-                        </label>
-                        <select
-                            id="themeId"
-                            name="themeId"
-                            defaultValue={task.themeId}
-                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        >
-                            {themes.map(theme => (
-                                <option key={theme.id} value={theme.id}>
-                                    {theme.name}
-                                </option>
-                            ))}
-                        </select>
                     </div>
 
                     <div className="flex justify-end space-x-3 mt-6">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white dark:bg-slate-700 dark:text-gray-300 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                         >
                             Cancel
                         </button>
