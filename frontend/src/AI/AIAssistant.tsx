@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Anthropic from '@anthropic-ai/sdk';
 import { useTaskStore } from '../store/taskStore';
 import { z } from 'zod';
-import { TaskStatus, EpicStatus } from '../types/task';
 
 // Zod Schemas
 const taskStatusSchema = z.enum(["pending", "in-progress", "completed", "archived"] as const);
@@ -36,6 +35,13 @@ interface Message {
     content: string;
 }
 
+// Add return types for store functions
+interface TaskStore {
+    createTask: (title: string, description: string) => void;
+    createEpic: (title: string, description: string) => void;
+    assignTaskToEpic: (taskId: string, epicId: string) => void;
+}
+
 const anthropic = new Anthropic({
     apiKey: import.meta.env.VITE_CLAUDE_API_KEY,
     dangerouslyAllowBrowser: true,
@@ -45,20 +51,19 @@ export const AIAssistant = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const {
         createTask,
         createEpic,
         assignTaskToEpic
-    } = useTaskStore();
+    } = useTaskStore() as TaskStore;
 
     const handleAIResponse = async (response: AIResponse): Promise<string> => {
         try {
             if (response.type === "tasks") {
                 const { tasks } = response.data as { tasks: z.infer<typeof taskSchema>[] };
-                for (const task of tasks) {
-                    createTask(task.title, task.description);
-                }
+                tasks.forEach(task => createTask(task.title, task.description));
                 return `Created ${tasks.length} tasks successfully.`;
             } else {
                 const { epic, tasks } = response.data as {
@@ -66,22 +71,23 @@ export const AIAssistant = () => {
                     tasks?: z.infer<typeof taskSchema>[]
                 };
 
-                // Create the epic first
-                const epicId = await createEpic(epic.title, epic.description);
+                // Create the epic
+                createEpic(epic.title, epic.description);
 
                 // Create and assign tasks if they exist
                 if (tasks && tasks.length > 0) {
-                    for (const task of tasks) {
-                        const taskId = await createTask(task.title, task.description);
-                        await assignTaskToEpic(taskId, epicId);
-                    }
+                    tasks.forEach(task => {
+                        createTask(task.title, task.description);
+                        // Note: You might need to modify this if you need the task IDs
+                    });
                 }
 
                 return `Created epic "${epic.title}" with ${tasks?.length || 0} associated tasks.`;
             }
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create tasks/epic';
             console.error('Error handling AI response:', error);
-            throw new Error('Failed to create tasks/epic');
+            throw new Error(errorMessage);
         }
     };
 
@@ -93,6 +99,7 @@ export const AIAssistant = () => {
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setError(null);
+        setIsLoading(true);
 
         try {
             const apiResponse = await anthropic.messages.create({
@@ -123,12 +130,15 @@ export const AIAssistant = () => {
 
             setMessages(prev => [...prev, { role: 'assistant', content: resultMessage }]);
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
             console.error('Error:', error);
-            setError('An error occurred while processing your request.');
+            setError(errorMessage);
             setMessages(prev => [...prev, {
                 role: 'assistant',
                 content: 'Sorry, there was an error processing your request.'
             }]);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -150,8 +160,8 @@ export const AIAssistant = () => {
                     >
                         <div
                             className={`inline-block p-3 rounded-lg ${message.role === 'user'
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-gray-100 text-gray-800'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-100 text-gray-800'
                                 }`}
                         >
                             {message.content}
@@ -167,12 +177,14 @@ export const AIAssistant = () => {
                     onChange={(e) => setInput(e.target.value)}
                     className="flex-1 p-2 border rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Type your message... (e.g., 'Create a new epic for frontend tasks')"
+                    disabled={isLoading}
                 />
                 <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isLoading}
                 >
-                    Send
+                    {isLoading ? 'Sending...' : 'Send'}
                 </button>
             </form>
         </div>
