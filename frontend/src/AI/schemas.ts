@@ -24,13 +24,21 @@ export const epicSchema = z.object({
 });
 
 // AI Response Schema
-export const aiResponseSchema = z.object({
-  type: z.enum(["tasks", "epic"]),
-  data: z.union([
-    z.object({ tasks: z.array(taskSchema) }),
-    z.object({ epic: epicSchema, tasks: z.array(taskSchema).optional() }),
-  ]),
-});
+export const aiResponseSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("tasks"),
+    data: z.object({
+      tasks: z.array(taskSchema),
+    }),
+  }),
+  z.object({
+    type: z.literal("epic"),
+    data: z.object({
+      epic: epicSchema,
+      tasks: z.array(taskSchema).optional(),
+    }),
+  }),
+]);
 
 // Type Exports
 export type AIResponse = z.infer<typeof aiResponseSchema>;
