@@ -1,32 +1,73 @@
-
 import { useState } from 'react';
-import { useTaskStore } from '../store/taskStore';
+import Anthropic from '@anthropic-ai/sdk';
 
 interface Message {
     role: 'user' | 'assistant';
     content: string;
 }
 
+// Initialize the Anthropic client with the API key from the environment variable
+const anthropic = new Anthropic({
+    apiKey: import.meta.env.VITE_CLAUDE_API_KEY,
+    dangerouslyAllowBrowser: true,
+});
+
 export const AIAssistant = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
-    const { createTask, createEpic } = useTaskStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!input.trim()) return;
 
         // Add user message
-        const userMessage = { role: 'user', content: input };
-        setMessages(prev => [...prev, userMessage]);
+        const userMessage: Message = { role: 'user', content: input };
+        setMessages((prev) => [...prev, userMessage]);
         setInput('');
 
-        // For now, just echo back a simple response
-        const response = {
-            role: 'assistant',
-            content: `I received your message: "${input}". AI integration coming soon!`
-        };
-        setMessages(prev => [...prev, response]);
+        try {
+            // Build the prompt from the conversation history
+            const conversation = [...messages, userMessage];
+            let prompt = '';
+
+            for (const msg of conversation) {
+                if (msg.role === 'user') {
+                    prompt += `\n\nHuman: ${msg.content}`;
+                } else {
+                    prompt += `\n\nAssistant: ${msg.content}`;
+                }
+            }
+
+            // Add the assistant's prompt prefix
+            prompt += `\n\nAssistant:`;
+
+            // Send the prompt to Claude
+            const apiResponse = await anthropic.messages.create({
+                model: 'claude-3-5-sonnet-20241022',
+                max_tokens: 1024,
+                messages: [{
+                    role: 'user',
+                    content: input
+                }]
+            });
+
+            // Add assistant's response to the messages
+            const assistantMessage: Message = {
+                role: 'assistant',
+                content: apiResponse.content[0].type === 'text'
+                    ? apiResponse.content[0].text
+                    : 'Unsupported response type',
+            };
+            setMessages((prev) => [...prev, assistantMessage]);
+        } catch (error) {
+            console.error('Error communicating with AI assistant:', error);
+            // Optionally, display an error message in the chat
+            const errorMessage: Message = {
+                role: 'assistant',
+                content: 'Sorry, there was an error processing your request.',
+            };
+            setMessages((prev) => [...prev, errorMessage]);
+        }
     };
 
     return (
