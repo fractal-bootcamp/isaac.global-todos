@@ -7,6 +7,8 @@ const anthropic = new Anthropic({
 });
 
 export const createAIMessage = async (input: string) => {
+  console.log("🚀 Sending request to Claude with input:", input);
+
   const response = await anthropic.messages.create({
     model: "claude-3-5-sonnet-20241022",
     max_tokens: 1024,
@@ -22,10 +24,14 @@ export const createAIMessage = async (input: string) => {
     ],
   });
 
+  console.log("📥 Raw response from Claude:", response.content);
+
   const content =
     response.content[0].type === "text"
       ? response.content[0].text
       : "Unsupported response type";
+
+  console.log("📝 Extracted content:", content);
 
   const jsonMatch =
     content.match(/```json\n([\s\S]*?)\n```/) || content.match(/\{[\s\S]*\}/);
@@ -33,7 +39,11 @@ export const createAIMessage = async (input: string) => {
     throw new Error("No valid JSON found in response");
   }
 
+  console.log("🔍 Matched JSON:", jsonMatch[1] || jsonMatch[0]);
+
   const jsonData = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+  console.log("✅ Parsed and validated response:", jsonData);
+
   return aiResponseSchema.parse(jsonData);
 };
 
@@ -41,11 +51,14 @@ export const handleAIResponse = async (
   response: AIResponse,
   taskStore: TaskStore
 ): Promise<string> => {
+  console.log("⚙️ Processing AI response:", response);
+
   if (response.type === "tasks") {
     const { tasks } = response.data as {
       tasks: Array<{ title: string; description: string }>;
     };
     tasks.forEach((task) => taskStore.createTask(task.title, task.description));
+    console.log("📋 Created tasks:", tasks);
     return `Created ${tasks.length} tasks successfully.`;
   }
 
@@ -62,6 +75,7 @@ export const handleAIResponse = async (
     });
   }
 
+  console.log("📚 Created epic:", epic, "with tasks:", tasks);
   return `Created epic "${epic.title}" with ${
     tasks?.length || 0
   } associated tasks.`;
