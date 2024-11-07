@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useTaskStore } from '../store/taskStore';
 import { Message, TaskStore } from './schemas';
 import { createAIMessage, handleAIResponse } from './service';
-
 export const AIAssistant = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -49,7 +48,15 @@ export const AIAssistant = () => {
 
             {isOpen && (
                 <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-40">
-                    <div className="bg-white max-w-2xl w-full mx-auto p-6 rounded-lg shadow-lg">
+                    <div className="bg-white max-w-2xl w-full mx-auto p-6 rounded-lg shadow-lg relative">
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="absolute top-2 right-4 text-gray-500 hover:text-gray-700 transition-colors text-2xl font-bold"
+                            aria-label="Close dialog"
+                        >
+                            ×
+                        </button>
+
                         <h2 className="text-2xl font-bold mb-6">AI Assistant</h2>
 
                         {error && (
