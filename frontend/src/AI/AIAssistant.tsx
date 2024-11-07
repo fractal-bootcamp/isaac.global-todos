@@ -1,15 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTaskStore } from '../store/taskStore';
 import { Message, TaskStore } from './schemas';
 import { createAIMessage, handleAIResponse } from './service';
+
 export const AIAssistant = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [hasShownGreeting, setHasShownGreeting] = useState(false);
 
     const taskStore = useTaskStore() as TaskStore;
+
+    // Handle initial greeting
+    useEffect(() => {
+        if (isOpen && !hasShownGreeting) {
+            const timer = setTimeout(() => {
+                setMessages([{
+                    role: 'assistant',
+                    content: "Hi! My name is Claude. How can I help you today?"
+                }]);
+                setHasShownGreeting(true);
+            }, 1000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, hasShownGreeting]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
