@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { CreateTaskForm } from '../components/CreateTaskForm';
 import { useTaskStore } from '../store/taskStore';
 import { TaskStatus, TASK_STATUSES } from '../types/task';
+import { TaskEditSubview } from '../components/TaskEditSubview';
 
 function TaskManagement() {
     const {
@@ -18,6 +19,9 @@ function TaskManagement() {
     // Filter states
     const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
     const [epicFilter, setEpicFilter] = useState<string>('all');
+
+    // Add edit state
+    const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
     // Apply filters
     const filteredTasks = tasks.filter(task => {
@@ -90,7 +94,8 @@ function TaskManagement() {
                         return (
                             <div
                                 key={task.id}
-                                className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 transition-all hover:shadow-md"
+                                onClick={() => setEditingTaskId(task.id)}
+                                className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 transition-all hover:shadow-md cursor-pointer"
                             >
                                 <div className="flex justify-between items-start mb-2">
                                     <div>
@@ -156,6 +161,14 @@ function TaskManagement() {
                             </div>
                         );
                     })}
+
+                    {/* Add TaskEditSubview */}
+                    {editingTaskId && (
+                        <TaskEditSubview
+                            taskId={editingTaskId}
+                            onClose={() => setEditingTaskId(null)}
+                        />
+                    )}
 
                     {filteredTasks.length === 0 && (
                         <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
