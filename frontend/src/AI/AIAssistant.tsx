@@ -32,23 +32,46 @@ export const AIAssistant = () => {
         e.preventDefault();
         if (!input.trim()) return;
 
+        // Add user message
         setMessages(prev => [...prev, { role: 'user', content: input }]);
         setInput('');
         setError(null);
         setIsLoading(true);
 
+        // Add assistant's "..." to indicate loading
+        const loadingMessage: Message = { role: 'assistant', content: '...' };
+        setMessages(prev => [...prev, loadingMessage]);
+
         try {
             const aiResponse = await createAIMessage(input);
             const resultMessage = await handleAIResponse(aiResponse, taskStore);
-            setMessages(prev => [...prev, { role: 'assistant', content: resultMessage }]);
+
+            setMessages(prev => {
+                // Remove the last "..." message
+                const newMessages = [...prev];
+                if (newMessages[newMessages.length - 1].content === '...') {
+                    newMessages.pop();
+                }
+                // Add the actual AI response
+                return [...newMessages, { role: 'assistant', content: resultMessage }];
+            });
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
             console.error('Error:', error);
             setError(errorMessage);
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: 'Sorry, there was an error processing your request.'
-            }]);
+
+            setMessages(prev => {
+                // Remove the last "..." message
+                const newMessages = [...prev];
+                if (newMessages[newMessages.length - 1].content === '...') {
+                    newMessages.pop();
+                }
+                // Add an error message from the assistant
+                return [...newMessages, {
+                    role: 'assistant',
+                    content: 'Sorry, there was an error processing your request.'
+                }];
+            });
         } finally {
             setIsLoading(false);
         }
@@ -91,7 +114,9 @@ export const AIAssistant = () => {
                                     <div
                                         className={`inline-block p-3 rounded-lg ${message.role === 'user'
                                             ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-100 text-gray-800'
+                                            : message.content === '...'
+                                                ? 'bg-gray-100 text-gray-800 italic'
+                                                : 'bg-gray-100 text-gray-800'
                                             }`}
                                     >
                                         {message.content}
