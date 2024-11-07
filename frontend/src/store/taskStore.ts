@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 // Type Definitions
 type TaskStatus = "pending" | "in-progress" | "completed" | "archived";
@@ -57,109 +58,122 @@ interface TaskState {
 }
 
 // Store Implementation
-export const useTaskStore = create<TaskState>()((set, get) => ({
-  tasks: [],
-  epics: [],
+export const useTaskStore = create<TaskState>()(
+  persist(
+    (set, get) => ({
+      tasks: [],
+      epics: [],
 
-  // Task Operations
-  createTask: (title, description) =>
-    set((state) => ({
-      tasks: [
-        ...state.tasks,
-        {
-          id: crypto.randomUUID(),
-          title,
-          description,
-          status: "pending" as TaskStatus,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        },
-      ],
-    })),
+      // Task Operations
+      createTask: (title, description) =>
+        set((state) => ({
+          tasks: [
+            ...state.tasks,
+            {
+              id: crypto.randomUUID(),
+              title,
+              description,
+              status: "pending" as TaskStatus,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            },
+          ],
+        })),
 
-  updateTask: (id, updates) =>
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === id ? { ...task, ...updates, updatedAt: Date.now() } : task
-      ),
-    })),
+      updateTask: (id, updates) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === id
+              ? { ...task, ...updates, updatedAt: Date.now() }
+              : task
+          ),
+        })),
 
-  deleteTask: (id) =>
-    set((state) => ({
-      tasks: state.tasks.filter((task) => task.id !== id),
-    })),
+      deleteTask: (id) =>
+        set((state) => ({
+          tasks: state.tasks.filter((task) => task.id !== id),
+        })),
 
-  moveTask: (id, status) =>
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === id ? { ...task, status, updatedAt: Date.now() } : task
-      ),
-    })),
+      moveTask: (id, status) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === id ? { ...task, status, updatedAt: Date.now() } : task
+          ),
+        })),
 
-  // Epic Operations
-  createEpic: (title, description) =>
-    set((state) => ({
-      epics: [
-        ...state.epics,
-        {
-          id: crypto.randomUUID(),
-          title,
-          description,
-          status: "active" as EpicStatus,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        },
-      ],
-    })),
+      // Epic Operations
+      createEpic: (title, description) =>
+        set((state) => ({
+          epics: [
+            ...state.epics,
+            {
+              id: crypto.randomUUID(),
+              title,
+              description,
+              status: "active" as EpicStatus,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            },
+          ],
+        })),
 
-  updateEpic: (id, updates) =>
-    set((state) => ({
-      epics: state.epics.map((epic) =>
-        epic.id === id ? { ...epic, ...updates, updatedAt: Date.now() } : epic
-      ),
-    })),
+      updateEpic: (id, updates) =>
+        set((state) => ({
+          epics: state.epics.map((epic) =>
+            epic.id === id
+              ? { ...epic, ...updates, updatedAt: Date.now() }
+              : epic
+          ),
+        })),
 
-  deleteEpic: (id) =>
-    set((state) => ({
-      epics: state.epics.filter((epic) => epic.id !== id),
-      // Also remove epic reference from tasks
-      tasks: state.tasks.map((task) =>
-        task.epicId === id ? { ...task, epicId: undefined } : task
-      ),
-    })),
+      deleteEpic: (id) =>
+        set((state) => ({
+          epics: state.epics.filter((epic) => epic.id !== id),
+          // Also remove epic reference from tasks
+          tasks: state.tasks.map((task) =>
+            task.epicId === id ? { ...task, epicId: undefined } : task
+          ),
+        })),
 
-  completeEpic: (id) =>
-    set((state) => ({
-      epics: state.epics.map((epic) =>
-        epic.id === id
-          ? { ...epic, status: "completed", updatedAt: Date.now() }
-          : epic
-      ),
-    })),
+      completeEpic: (id) =>
+        set((state) => ({
+          epics: state.epics.map((epic) =>
+            epic.id === id
+              ? { ...epic, status: "completed", updatedAt: Date.now() }
+              : epic
+          ),
+        })),
 
-  // Task-Epic Relations
-  assignTaskToEpic: (taskId, epicId) =>
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === taskId ? { ...task, epicId, updatedAt: Date.now() } : task
-      ),
-    })),
+      // Task-Epic Relations
+      assignTaskToEpic: (taskId, epicId) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, epicId, updatedAt: Date.now() }
+              : task
+          ),
+        })),
 
-  removeTaskFromEpic: (taskId) =>
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === taskId
-          ? { ...task, epicId: undefined, updatedAt: Date.now() }
-          : task
-      ),
-    })),
+      removeTaskFromEpic: (taskId) =>
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === taskId
+              ? { ...task, epicId: undefined, updatedAt: Date.now() }
+              : task
+          ),
+        })),
 
-  // Utility Operations
-  getTasksByStatus: (status) =>
-    get().tasks.filter((task) => task.status === status),
+      // Utility Operations
+      getTasksByStatus: (status) =>
+        get().tasks.filter((task) => task.status === status),
 
-  getTasksByEpicId: (epicId) =>
-    get().tasks.filter((task) => task.epicId === epicId),
+      getTasksByEpicId: (epicId) =>
+        get().tasks.filter((task) => task.epicId === epicId),
 
-  getEpicById: (id) => get().epics.find((epic) => epic.id === id),
-}));
+      getEpicById: (id) => get().epics.find((epic) => epic.id === id),
+    }),
+    {
+      name: "task-store", // unique name for the storage
+    }
+  )
+);
