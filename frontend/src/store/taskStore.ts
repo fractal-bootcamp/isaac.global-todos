@@ -174,7 +174,6 @@ export const useTaskStore = create<TaskState>()(
     }),
     {
       name: "task-store", // unique name for the storage
-      getStorage: () => localStorage, // (optional) by default, 'localStorage' is used
     }
   )
 );
