@@ -34,12 +34,6 @@ function App() {
                 Epics
               </Link>
               <Link
-                to="/ai"
-                className="text-gray-700 hover:text-blue-500"
-              >
-                AI Assistant
-              </Link>
-              <Link
                 to="/about"
                 className="text-gray-700 hover:text-blue-500"
               >
@@ -56,9 +50,9 @@ function App() {
             <Route path="/epics" element={<EpicList />} />
             <Route path="/epics/new" element={<EpicCreateForm />} />
             <Route path="/epics/:id" element={<EpicDetail />} />
-            <Route path="/ai" element={<AIAssistant />} />
           </Routes>
         </main>
+        <AIAssistant />
       </div>
     </Router>
   );
