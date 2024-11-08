@@ -1,5 +1,5 @@
 services:
-  db:
+  postgres-db:
     image: postgres
     restart: always
     environment:
@@ -7,8 +7,25 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     ports:
-      - '5555:5432'
+      - '5555:5432'  # Maps to 5555 on the host
     volumes:
       - db-data:/var/lib/postgresql/data
+
+  pgvector-db:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ragbackend
+    ports:
+      - '15432:5432'  # Maps to 15432 on the host
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 volumes:
   db-data:
+  postgres_data:
+
+# Commands to test the db
+# psql -h localhost -p 5555 -U postgres -d postgres
+# psql -h localhost -p 15432 -U postgres -d ragbackend

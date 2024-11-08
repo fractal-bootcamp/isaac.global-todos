@@ -8,36 +8,34 @@ datasource db {
 }
 
 enum TaskStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  ARCHIVED
+  pending
+  in_progress
+  completed
+  archived
 }
 
 enum EpicStatus {
-  ACTIVE
-  COMPLETED
-}
-
-model Task {
-  id          String     @id @default(uuid())
-  title       String
-  description String
-  status      TaskStatus @default(PENDING)
-  epicId      String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  epic Epic? @relation(fields: [epicId], references: [id])
+  active
+  completed
 }
 
 model Epic {
-  id          String     @id @default(uuid())
+  id          String     @id
   title       String
   description String
-  status      EpicStatus @default(ACTIVE)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  status      EpicStatus
+  tasks       Task[]     @relation("EpicTasks")
+  createdAt   DateTime
+  updatedAt   DateTime
+}
 
-  tasks Task[]
+model Task {
+  id          String     @id
+  title       String
+  description String
+  status      TaskStatus
+  epic        Epic?      @relation("EpicTasks", fields: [epicId], references: [id])
+  epicId      String?
+  createdAt   DateTime
+  updatedAt   DateTime
 }
