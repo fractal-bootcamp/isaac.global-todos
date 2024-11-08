@@ -30,7 +30,7 @@ interface TaskState {
   epics: Epic[];
 
   // Task Operations
-  createTask: (title: string, description: string) => void;
+  createTask: (title: string, description: string) => string;
   updateTask: (
     id: string,
     updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>
@@ -39,7 +39,7 @@ interface TaskState {
   moveTask: (id: string, status: TaskStatus) => void;
 
   // Epic Operations
-  createEpic: (title: string, description: string) => void;
+  createEpic: (title: string, description: string) => string;
   updateEpic: (
     id: string,
     updates: Partial<Omit<Epic, "id" | "createdAt" | "updatedAt">>
@@ -65,12 +65,13 @@ export const useTaskStore = create<TaskState>()(
       epics: [],
 
       // Task Operations
-      createTask: (title, description) =>
+      createTask: (title, description) => {
+        const id = crypto.randomUUID();
         set((state) => ({
           tasks: [
             ...state.tasks,
             {
-              id: crypto.randomUUID(),
+              id,
               title,
               description,
               status: "pending" as TaskStatus,
@@ -78,7 +79,9 @@ export const useTaskStore = create<TaskState>()(
               updatedAt: Date.now(),
             },
           ],
-        })),
+        }));
+        return id;
+      },
 
       updateTask: (id, updates) =>
         set((state) => ({
@@ -102,12 +105,13 @@ export const useTaskStore = create<TaskState>()(
         })),
 
       // Epic Operations
-      createEpic: (title, description) =>
+      createEpic: (title, description) => {
+        const id = crypto.randomUUID();
         set((state) => ({
           epics: [
             ...state.epics,
             {
-              id: crypto.randomUUID(),
+              id,
               title,
               description,
               status: "active" as EpicStatus,
@@ -115,7 +119,9 @@ export const useTaskStore = create<TaskState>()(
               updatedAt: Date.now(),
             },
           ],
-        })),
+        }));
+        return id;
+      },
 
       updateEpic: (id, updates) =>
         set((state) => ({

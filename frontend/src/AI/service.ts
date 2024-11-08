@@ -67,11 +67,17 @@ export const handleAIResponse = async (
     tasks?: Array<{ title: string; description: string }>;
   };
 
-  taskStore.createEpic(epic.title, epic.description);
+  console.log("🏗️ Creating epic:", epic);
+  const epicId = taskStore.createEpic(epic.title, epic.description);
+  console.log("📝 Created epic with ID:", epicId);
 
   if (tasks && tasks.length > 0) {
+    console.log("📎 Attempting to create and assign tasks:", tasks);
     tasks.forEach((task) => {
-      taskStore.createTask(task.title, task.description);
+      console.log("📌 Creating task:", task);
+      const taskId = taskStore.createTask(task.title, task.description);
+      console.log("🔗 Assigning task", taskId, "to epic", epicId);
+      taskStore.assignTaskToEpic(taskId, epicId);
     });
   }
 
