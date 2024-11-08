@@ -50,7 +50,7 @@ export type Message = {
 };
 
 export interface TaskStore {
-  createTask: (title: string, description: string) => void;
-  createEpic: (title: string, description: string) => void;
+  createTask: (title: string, description: string) => string;
+  createEpic: (title: string, description: string) => string;
   assignTaskToEpic: (taskId: string, epicId: string) => void;
 }
