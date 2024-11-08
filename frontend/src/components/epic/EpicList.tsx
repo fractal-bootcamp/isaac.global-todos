@@ -3,7 +3,15 @@ import { Link } from 'react-router-dom';
 import { useTaskStore } from '../../store/taskStore';
 
 export const EpicList = () => {
-    const { epics, getTasksByEpicId } = useTaskStore();
+    const { epics, getTasksByEpicId, deleteEpic } = useTaskStore();
+
+    const handleDeleteEpic = (e: React.MouseEvent, epicId: string) => {
+        e.preventDefault(); // Prevent navigation from Link
+        e.stopPropagation(); // Prevent event bubbling
+        if (window.confirm('Are you sure you want to delete this epic?')) {
+            deleteEpic(epicId);
+        }
+    };
 
     return (
         <div className="max-w-4xl mx-auto">
@@ -21,30 +29,39 @@ export const EpicList = () => {
                 {epics.map(epic => {
                     const epicTasks = getTasksByEpicId(epic.id);
                     return (
-                        <Link
-                            key={epic.id}
-                            to={`/epics/${epic.id}`}
-                            className="block p-4 border rounded hover:border-blue-500"
-                        >
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-medium">{epic.title}</h3>
-                                    <p className="text-gray-600 text-sm mt-1">{epic.description}</p>
+                        <div key={epic.id} className="group relative">
+                            <Link
+                                to={`/epics/${epic.id}`}
+                                className="block p-4 border rounded hover:border-blue-500"
+                            >
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-medium">{epic.title}</h3>
+                                        <p className="text-gray-600 text-sm mt-1">{epic.description}</p>
+                                    </div>
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-sm text-gray-500">
+                                            {epicTasks.length} tasks
+                                        </span>
+                                        <span className={`px-2 py-1 text-sm rounded ${epic.status === 'completed'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-blue-100 text-blue-800'
+                                            }`}>
+                                            {epic.status}
+                                        </span>
+                                        <button
+                                            onClick={(e) => handleDeleteEpic(e, epic.id)}
+                                            className="px-3 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                                            aria-label="Delete epic"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex items-center space-x-3">
-                                    <span className="text-sm text-gray-500">
-                                        {epicTasks.length} tasks
-                                    </span>
-                                    <span className={`px-2 py-1 text-sm rounded ${epic.status === 'completed'
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-blue-100 text-blue-800'
-                                        }`}>
-                                        {epic.status}
-                                    </span>
-                                </div>
-                            </div>
-                        </Link>
-                    );
+                            </Link>
+                        </div>
+                    )
+
                 })}
 
                 {epics.length === 0 && (
