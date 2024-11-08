@@ -1,4 +1,10 @@
-export const sampleData = {
+// prisma/seed.ts
+
+import { PrismaClient, EpicStatus, TaskStatus } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+const sampleData = {
   tasks: [
     {
       id: "task-001",
@@ -22,7 +28,7 @@ export const sampleData = {
       id: "task-003",
       title: "Implement user authentication",
       description: "Set up JWT authentication and user sessions",
-      status: "in-progress",
+      status: "in_progress",
       epicId: "epic-001",
       createdAt: 1709647800000,
       updatedAt: 1709647800000,
@@ -82,3 +88,49 @@ export const sampleData = {
     },
   ],
 };
+
+async function main() {
+  // Seed Epics
+  for (const epicData of sampleData.epics) {
+    await prisma.epic.upsert({
+      where: { id: epicData.id },
+      update: {},
+      create: {
+        id: epicData.id,
+        title: epicData.title,
+        description: epicData.description,
+        status: epicData.status as EpicStatus,
+        createdAt: new Date(epicData.createdAt),
+        updatedAt: new Date(epicData.updatedAt),
+      },
+    });
+  }
+
+  // Seed Tasks
+  for (const taskData of sampleData.tasks) {
+    await prisma.task.upsert({
+      where: { id: taskData.id },
+      update: {},
+      create: {
+        id: taskData.id,
+        title: taskData.title,
+        description: taskData.description,
+        status: taskData.status as TaskStatus,
+        epicId: taskData.epicId || null,
+        createdAt: new Date(taskData.createdAt),
+        updatedAt: new Date(taskData.updatedAt),
+      },
+    });
+  }
+}
+
+main()
+  .then(async () => {
+    console.log("Database seeded successfully");
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error("Error seeding database:", e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

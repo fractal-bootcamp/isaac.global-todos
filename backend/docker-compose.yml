@@ -25,3 +25,7 @@ services:
 volumes:
   db-data:
   postgres_data:
+
+# Commands to test the db
+# psql -h localhost -p 5555 -U postgres -d postgres
+# psql -h localhost -p 15432 -U postgres -d ragbackend
