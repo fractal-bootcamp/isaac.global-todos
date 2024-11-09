@@ -1,15 +1,29 @@
 // src/components/CreateTaskForm.tsx
 import React, { useState } from 'react';
 import { useTaskStore } from '../store/taskStore';
+import { useApiTaskStore } from '../store/apiTaskStore';
 
 export const CreateTaskForm = () => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const { createTask } = useTaskStore();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Get both create functions (API version is primary, local store as backup)
+    const createTaskApi = useApiTaskStore(state => state.createTask);
+    const createTaskLocal = useTaskStore(state => state.createTask);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        createTask(title, description);
+        try {
+            // Try API version first
+            const taskId = await createTaskApi(title, description);
+            console.log('Task created with API:', taskId);
+        } catch (error) {
+            // Fallback to local store if API fails
+            console.warn('API create failed, using local store:', error);
+            createTaskLocal(title, description);
+        }
+
+        // Clear form regardless of which store was used
         setTitle('');
         setDescription('');
     };
