@@ -4,16 +4,14 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const app = express();
+const port = 3000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Basic health check
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
-
-// GET all tasks
+// Get all tasks
+// curl http://localhost:3000/api/tasks
 app.get("/api/tasks", async (req, res) => {
   try {
     const tasks = await prisma.task.findMany({
@@ -23,28 +21,18 @@ app.get("/api/tasks", async (req, res) => {
     });
     res.json(tasks);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching tasks" });
+    console.error("Error fetching tasks:", error);
+    res.status(500).json({ error: "Failed to fetch tasks" });
   }
 });
 
-// POST new task
-app.post("/api/tasks", async (req, res) => {
-  try {
-    const { title, description } = req.body;
-    const task = await prisma.task.create({
-      data: {
-        title,
-        description,
-        status: "PENDING",
-      },
-    });
-    res.json(task);
-  } catch (error) {
-    res.status(500).json({ error: "Error creating task" });
-  }
+// Start server
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
 });
 
-// GET all epics
+// Get all epics
+// curl http://localhost:3000/api/epics
 app.get("/api/epics", async (req, res) => {
   try {
     const epics = await prisma.epic.findMany({
@@ -54,28 +42,14 @@ app.get("/api/epics", async (req, res) => {
     });
     res.json(epics);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching epics" });
+    console.error("Error fetching epics:", error);
+    res.status(500).json({ error: "Failed to fetch epics" });
   }
 });
 
-// POST new epic
-app.post("/api/epics", async (req, res) => {
-  try {
-    const { title, description } = req.body;
-    const epic = await prisma.epic.create({
-      data: {
-        title,
-        description,
-        status: "ACTIVE",
-      },
-    });
-    res.json(epic);
-  } catch (error) {
-    res.status(500).json({ error: "Error creating epic" });
-  }
-});
-
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Graceful shutdown
+process.on("SIGTERM", async () => {
+  console.log("SIGTERM received. Closing Prisma Client.");
+  await prisma.$disconnect();
+  process.exit(0);
 });
