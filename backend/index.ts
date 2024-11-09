@@ -51,13 +51,13 @@ app.get("/api/epics", async (req, res) => {
 // curl -X POST -H "Content-Type: application/json" -d '{"title":"New Task","description":"Task description","status":"pending"}' http://localhost:3000/api/tasks | jq
 app.post("/api/tasks", async (req, res) => {
   try {
-    const { title, description, status, epicId } = req.body;
+    const { title, description, epicId } = req.body;
     const task = await prisma.task.create({
       data: {
-        id: `task-${Date.now()}`, // Simple ID generation
+        id: `task-${Date.now()}`,
         title,
         description,
-        status,
+        status: "pending",
         epicId,
         createdAt: new Date(),
         updatedAt: new Date(),
